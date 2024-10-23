@@ -1,0 +1,60 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  annotations:
+    eck.k8s.elastic.co/downward-node-labels: "topology.kubernetes.io/zone"
+  name: quickstart
+spec:
+  version: 8.15.3
+  nodeSets:
+  - name: default
+    count: 3
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data # Do not change this name unless you set up a volume mount for the data path.
+        labels:
+          run: "elasticsearch"
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: premium-rwo
+  podDisruptionBudget:  # ensure at least 1 node available when using k8s node drain
+    spec:
+      minAvailable: 1
+      selector:
+        matchLabels:
+          elasticsearch.k8s.elastic.co/cluster-name: quickstart
+    config:
+      node.attr.zone: ${ZONE}
+      cluster.routing.allocation.awareness.attributes: k8s_node_name,zone
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ZONE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.annotations['topology.kubernetes.io/zone']
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: cloud.google.com/gke-spot
+                  operator: Equal
+                  values:
+                  - true
+
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                elasticsearch.k8s.elastic.co/cluster-name: quickstart
+                elasticsearch.k8s.elastic.co/statefulset-name: quickstart-es-default

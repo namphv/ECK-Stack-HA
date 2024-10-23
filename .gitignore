@@ -1,0 +1,7 @@
+.idea
+terraform.tfvars
+.terraform
+/tmp/
+/tmp_new/
+.DS_Store
+.terraform.lock.hcl
