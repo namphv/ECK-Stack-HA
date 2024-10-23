@@ -1,7 +1,7 @@
 variable "project_id" {
   type        = string
   description = "GCP project ID of project to deploy this sample into"
-  default     = "Elastic Cluster"
+  default     = "elasticsearch"
 }
 
 variable "region" {
@@ -23,6 +23,6 @@ variable "machine_type" {
 
 variable "es_name" {
   type        = string
-  description = "elasticsearch cluster pods label"
+  description = "elasticsearch cluster pods label, it will be use in ECK deployment"
   default     = "elasticsearch"
 }

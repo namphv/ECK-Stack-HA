@@ -5,7 +5,7 @@ resource "google_container_cluster" "cluster" {
   project  = var.project_id
 
   remove_default_node_pool = true
-  initial_node_count       = 1
+  node_locations  = ["us-central1-a", "us-central1-b", "us-central1-f"]
 
   depends_on = [
     google_project_service.project
@@ -22,11 +22,6 @@ resource "google_container_node_pool" "spot_pool" {
   project    = var.project_id
   cluster    = google_container_cluster.cluster.name
   node_count = 1
-  autoscaling {
-    min_node_count = 0
-    max_node_count = 3
-  }
-
   node_config {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
@@ -73,12 +68,11 @@ resource "google_container_node_pool" "on_demand_pool" {
     metadata = {
       disable-legacy-endpoints = "true"
     }
-    taint = [
-        {
+    taint {
         effect = "PREFER_NO_SCHEDULE"
         key    = "type"
         value  = "on-demand"
         }
-    ]
+
   }
 }

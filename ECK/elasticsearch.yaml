@@ -19,14 +19,8 @@ spec:
         - ReadWriteOnce
         resources:
           requests:
-            storage: 5Gi
+            storage: 10Gi
         storageClassName: premium-rwo
-  podDisruptionBudget:  # ensure at least 1 node available when using k8s node drain
-    spec:
-      minAvailable: 1
-      selector:
-        matchLabels:
-          elasticsearch.k8s.elastic.co/cluster-name: quickstart
     config:
       node.attr.zone: ${ZONE}
       cluster.routing.allocation.awareness.attributes: k8s_node_name,zone
@@ -46,9 +40,9 @@ spec:
               preference:
                 matchExpressions:
                 - key: cloud.google.com/gke-spot
-                  operator: Equal
+                  operator: In
                   values:
-                  - true
+                  - "true"
 
         topologySpreadConstraints:
           - maxSkew: 1
